@@ -61,29 +61,52 @@ def predict(model, data_loader, device):
     return preds, reals
 
 
-def compute_metrics(preds, reals):
-    # Long Short signals conversion
-    positions = np.sign(preds)
-    realized_returns = positions * reals
+def volatility_target_positions(preds, returns, target_vol=0.10, window=20, alpha=10.0, max_leverage=2.0, threshold=0.0):
+    if isinstance(preds, torch.Tensor):
+        preds = preds.detach().cpu().numpy().flatten()
+    else:
+        returns = returns.to_numpy()
+    
+    preds = np.nan_to_num(preds, nan=0.0)
+    returns = np.nan_to_num(returns, nan=0.0)
 
-    cum_returns = np.sum(realized_returns)
-    volatility = np.std(realized_returns)
-    sharpe = cum_returns / volatility if volatility > 0 else np.nan
+    rolling_vol = np.array([
+        np.std(returns[max(0, i - window):i]) for i in range(len(returns))
+    ])
+    rolling_vol = np.maximum(rolling_vol, 1e-6) * np.sqrt(252)
+
+    raw_signal = np.tanh(alpha * preds)
+    raw_signal[np.abs(raw_signal) < threshold] = 0.0
+
+    pos = raw_signal * (target_vol / rolling_vol)
+    pos = np.clip(pos, -max_leverage, max_leverage)
+
+    return pos
+
+
+def compute_metrics(preds, reals, target_vol=0.10, window=20, alpha=10.0, max_leverage=2.0, threshold=0.0, freq=252):
+    positions = volatility_target_positions(preds, reals, target_vol, window, alpha, max_leverage, threshold)
+    strategy_returns = positions * reals
+
+    # Portfolio metrics
+    ann_return = np.mean(strategy_returns) * freq
+    ann_vol = np.std(strategy_returns) * np.sqrt(freq)
+    sharpe = ann_return / ann_vol if ann_vol > 0 else np.nan
 
     # Drawdown
-    cum_curve = np.cumsum(realized_returns)
+    cum_curve = np.cumprod(1 + strategy_returns)
     running_max = np.maximum.accumulate(cum_curve)
-    drawdown = np.min(cum_curve - running_max)
+    drawdown = (cum_curve - running_max) / running_max
+    max_drawdown = drawdown.min()
 
     # Turnover
     turnover = np.mean(np.abs(np.diff(positions)))
 
-    # Metrics Dict
     metrics = {
         "Sharpe Ratio": sharpe,
-        "Cumulative Return": cum_returns,
-        "Volatility": volatility,
-        "Drawdown": drawdown,
+        "Annualized Return": ann_return,
+        "Volatility": ann_vol,
+        "Max Drawdown": max_drawdown,
         "Turnover": turnover
     }
 
