@@ -7,10 +7,21 @@ from sklearn.preprocessing import StandardScaler
 
 
 def download_data(ticker: str, start="", end="", interval="") -> pl.DataFrame:
-    df = yf.download(ticker, start=start, end=end, interval=interval, progress=False)
+    df = yf.download(ticker, start=start, end=end, interval=interval, progress=False, auto_adjust=False)
     df.dropna(inplace=True)
+    
+    if isinstance(df.columns, pd.MultiIndex):
+        df.columns = [col[0] for col in df.columns]
+    
+    pl_df = pl.from_pandas(df.reset_index())
+    
+    if 'Adj Close' in pl_df.columns:
+        pl_df = pl_df.with_columns(pl.col("Adj Close").alias("AdjClose")).drop("Adj Close")
+    elif 'Close' in pl_df.columns:
+        pl_df = pl_df.with_columns(pl.col("Close").alias("AdjClose"))
+    
+    return pl_df
 
-    return pl.from_pandas(df).with_columns(pl.col("Adj Close").alias("AdjClose")).drop("Adj Close")
 
 
 def add_features(df: pl.DataFrame) -> pl.DataFrame:
