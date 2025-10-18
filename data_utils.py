@@ -1,6 +1,7 @@
 import torch
 import numpy as np
 import polars as pl
+import pandas as pd
 import yfinance as yf
 from torch.utils.data import Dataset
 from sklearn.preprocessing import StandardScaler
@@ -13,15 +14,16 @@ def download_data(ticker: str, start="", end="", interval="") -> pl.DataFrame:
     if isinstance(df.columns, pd.MultiIndex):
         df.columns = [col[0] for col in df.columns]
     
-    pl_df = pl.from_pandas(df.reset_index())
+    df = df.reset_index()
+    
+    pl_df = pl.from_pandas(df)
     
     if 'Adj Close' in pl_df.columns:
         pl_df = pl_df.with_columns(pl.col("Adj Close").alias("AdjClose")).drop("Adj Close")
-    elif 'Close' in pl_df.columns:
+    elif 'Close' in pl_df.columns and 'AdjClose' not in pl_df.columns:
         pl_df = pl_df.with_columns(pl.col("Close").alias("AdjClose"))
     
     return pl_df
-
 
 
 def add_features(df: pl.DataFrame) -> pl.DataFrame:
@@ -69,7 +71,7 @@ class TS_Dataset(Dataset):
         return len(self.X)
     
 
-    def __getitem__(self, index):\
+    def __getitem__(self, index):
         return self.X[index], self.y[index]
     
 
