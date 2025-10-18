@@ -7,22 +7,29 @@ from torch.utils.data import Dataset
 from sklearn.preprocessing import StandardScaler
 
 
-def download_data(ticker: str, start="", end="", interval="") -> pl.DataFrame:
-    df = yf.download(ticker, start=start, end=end, interval=interval, progress=False, auto_adjust=False)
+def download_data(ticker: str, start="", end="", interval="1d") -> pl.DataFrame:
+    df = yf.download(
+        ticker,
+        start=start,
+        end=end,
+        interval=interval,
+        progress=False,
+        auto_adjust=False
+    )
     df.dropna(inplace=True)
-    
+
     if isinstance(df.columns, pd.MultiIndex):
         df.columns = [col[0] for col in df.columns]
-    
+
     df = df.reset_index()
-    
+
     pl_df = pl.from_pandas(df)
-    
-    if 'Adj Close' in pl_df.columns:
-        pl_df = pl_df.with_columns(pl.col("Adj Close").alias("AdjClose")).drop("Adj Close")
-    elif 'Close' in pl_df.columns and 'AdjClose' not in pl_df.columns:
-        pl_df = pl_df.with_columns(pl.col("Close").alias("AdjClose"))
-    
+
+    if "Adj Close" in pl_df.columns:
+        pl_df = pl_df.rename({"Adj Close": "AdjClose"})
+    elif "Close" in pl_df.columns and "AdjClose" not in pl_df.columns:
+        pl_df = pl_df.rename({"Close": "AdjClose"})
+
     return pl_df
 
 
