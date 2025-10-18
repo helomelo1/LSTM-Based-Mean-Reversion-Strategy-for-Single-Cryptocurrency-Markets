@@ -1,7 +1,5 @@
-import os
 import torch
 import numpy as np
-from tqdm import tqdm
 
 
 def train_model(model, optimizer, criterion, train_loader, test_loader, device, epochs=20, verbose=True):
