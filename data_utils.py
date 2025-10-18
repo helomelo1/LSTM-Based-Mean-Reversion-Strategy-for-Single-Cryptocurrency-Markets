@@ -7,7 +7,7 @@ from torch.utils.data import Dataset
 from sklearn.preprocessing import StandardScaler
 
 
-def download_data(ticker: str, start="", end="", interval="1d") -> pl.DataFrame:
+def download_data(ticker: str, start="2018-01-01", end="2025-01-01", interval="1d") -> pl.DataFrame:
     df = yf.download(
         ticker,
         start=start,
@@ -82,7 +82,7 @@ class TS_Dataset(Dataset):
         return self.X[index], self.y[index]
     
 
-def load_dataset(ticker: str, seq_len=60, train_split=0.8, start="", end="", interval=""):
+def load_dataset(ticker: str, seq_len=60, train_split=0.8, start="2018-01-01", end="2025-01-01", interval="1d"):
     df = download_data(ticker, start=start, end=end, interval=interval)
     df = add_features(df)
     X, y, _ = prepare_features(df)
