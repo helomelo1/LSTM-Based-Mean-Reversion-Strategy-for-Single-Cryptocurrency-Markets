@@ -62,8 +62,6 @@ def predict(model, data_loader, device):
 def volatility_target_positions(preds, returns, target_vol=0.10, window=20, alpha=10.0, max_leverage=2.0, threshold=0.0):
     if isinstance(preds, torch.Tensor):
         preds = preds.detach().cpu().numpy().flatten()
-    else:
-        returns = returns.to_numpy()
     
     preds = np.nan_to_num(preds, nan=0.0)
     returns = np.nan_to_num(returns, nan=0.0)
