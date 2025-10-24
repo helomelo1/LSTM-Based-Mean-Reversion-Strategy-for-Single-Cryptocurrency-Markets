@@ -65,9 +65,8 @@ class VectorBTMeanReversion:
         exits = signals_df['long_exit'] | signals_df['short_exit']
         
         # Determine direction: 1 for long, -1 for short
-        direction = np.where(signals_df['long_entry'], 1, 
-                            np.where(signals_df['short_entry'], -1, np.nan))
-        direction = pd.Series(direction, index=signals_df.index).fillna(method='ffill').fillna(0)
+        direction = np.where(signals_df['long_entry'], 1, np.where(signals_df['short_entry'], -1, np.nan))
+        direction = pd.Series(direction, index=signals_df.index).fillna(method='ffill').fillna(0).astype(int)
         
         print("Running VectorBT backtest...")
         

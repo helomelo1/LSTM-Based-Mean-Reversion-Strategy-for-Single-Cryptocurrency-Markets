@@ -84,9 +84,9 @@ def main():
     )
 
     backtester.print_results()
-    backtester.plot_results()
-    backtester.analyze_returns()
-    backtester.plot_positions(df_for_backtest)
+    # backtester.plot_results()
+    # backtester.analyze_returns()
+    # backtester.plot_positions(df_for_backtest)
 
     # ==========================
     # 5️⃣ Save outputs
