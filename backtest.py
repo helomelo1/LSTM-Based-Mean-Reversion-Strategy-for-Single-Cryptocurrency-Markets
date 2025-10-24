@@ -42,11 +42,13 @@ class VectorBTMeanReversion:
             'short_entry'
         ] = True
         
-        # Long exit: Z-score crosses above exit threshold
-        signals_df.loc[signals_df['Z_Score'] > -z_score_exit, 'long_exit'] = True
-        
-        # Short exit: Z-score crosses below exit threshold
-        signals_df.loc[signals_df['Z_Score'] < z_score_exit, 'short_exit'] = True
+        # Long exit: Z-score crosses *above* the exit threshold
+        signals_df['long_exit'] = (signals_df['Z_Score'].shift(1) <= -z_score_exit) & \
+                                (signals_df['Z_Score'] > -z_score_exit)
+
+        # Short exit: Z-score crosses *below* the exit threshold
+        signals_df['short_exit'] = (signals_df['Z_Score'].shift(1) >= z_score_exit) & \
+                                (signals_df['Z_Score'] < z_score_exit)
         
         self.signals_df = signals_df
         
