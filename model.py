@@ -19,16 +19,15 @@ class TimeSeriesDataset(Dataset):
 
 
 class AttentionLayer(nn.Module):
-    def __init(self, hidden_size):
+    def __init__(self, hidden_size):
         super(AttentionLayer, self).__init__()
-        self.hidden_size = hidden_size
         self.attention = nn.Linear(hidden_size, 1)
 
     def forward(self, lstm_output):
         attention_scores = self.attention(lstm_output)
         attention_weights = torch.softmax(attention_scores, dim=1)\
 
-        context_vector = torch.sum(attention_weights * lstm_output)
+        context_vector = torch.sum(attention_weights * lstm_output, dim=1)
 
         return context_vector, attention_weights
 
@@ -55,7 +54,7 @@ class AttentionBiLSTM(nn.Module):
         self.fc = nn.Linear(hidden_size * 2, 1)
 
     def forward(self, x):
-        lstm_out, (hidden, cell) = self.bilstm(x)
+        lstm_out, _ = self.bilstm(x)
         context_vector, attention_weights = self.attention(lstm_out)
         normalized = self.batch_norm(context_vector)
         dropped = self.dropout(normalized)
@@ -68,8 +67,8 @@ def create_data_loaders(X_train, y_train, X_val, y_val):
     train_dataset = TimeSeriesDataset(X_train, y_train)
     val_dataset = TimeSeriesDataset(X_val, y_val)
 
-    train_loader = DataLoader(train_loader, batch_size=32)
-    val_loader = DataLoader(val_loader, batch_size=32)
+    train_loader = DataLoader(train_dataset, batch_size=32)
+    val_loader = DataLoader(val_dataset, batch_size=32)
 
     return train_loader, val_loader
 
@@ -77,7 +76,7 @@ def create_data_loaders(X_train, y_train, X_val, y_val):
 def train_model(model, train_loader, val_loader, epochs=50, lr=0.001, device=DEVICE):
     model = model.to(device)
     criterion = nn.MSELoss()
-    optimizer = torch.optim.Adam(model.parameters, lr=lr)
+    optimizer = torch.optim.Adam(model.parameters(), lr=lr)
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', patience=5, factor=0.5)
 
     train_losses = []

@@ -24,7 +24,7 @@ def compute_features(df, lookback=24):
 
     # Calculating Z-Score
     rolling_std = df['Close'].rolling(window=lookback).std()
-    df['Z-Score'] = (df['Close'] - df['SMA']) / rolling_std
+    df['Z_Score'] = (df['Close'] - df['SMA']) / rolling_std
 
     # Calculating Returns
     df['Returns'] = df['Close'].pct_change()
