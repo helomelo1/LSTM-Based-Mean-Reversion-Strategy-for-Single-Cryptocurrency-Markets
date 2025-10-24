@@ -3,7 +3,7 @@ import torch.nn as nn
 import numpy as np
 from torch.utils.data import Dataset, DataLoader
 
-DEVICE = torch.device("cuda" if torch.cude.is_available() else "cpu")
+DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
 class TimeSeriesDataset(Dataset):

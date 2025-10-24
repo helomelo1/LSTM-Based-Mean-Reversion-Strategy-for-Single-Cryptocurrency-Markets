@@ -7,6 +7,11 @@ from sklearn.preprocessing import StandardScaler
 
 def fetch_data(ticker="ETH-USD", interval="1h", period="720d"):
     df = yf.download(ticker, interval=interval, period=period)
+    
+    # Flatten multi-index columns (if any)
+    if isinstance(df.columns, pd.MultiIndex):
+        df.columns = [col[0] if isinstance(col, tuple) else col for col in df.columns]
+    
     return df
 
 
