@@ -8,9 +8,7 @@ from backtest import VectorBTMeanReversion
 
 
 def main():
-    # ==========================
-    # ⚙️ Parameters
-    # ==========================
+    # Parameters
     CONFIG = {
         "ticker": "ETH-USD",
         "interval": "1h",
@@ -27,9 +25,7 @@ def main():
         "fees": 0.001
     }
 
-    # ==========================
-    # 1️⃣ Data Preparation
-    # ==========================
+    # Data Preparation
     print("Fetching and preparing data...")
     df = fetch_data(
         ticker=CONFIG["ticker"],
@@ -41,9 +37,7 @@ def main():
     X, y, scaler = prepare_seq(df, seq_len=CONFIG["seq_len"], target_col='Returns')
     X_train, X_val, X_test, y_train, y_val, y_test = split_data(X, y)
 
-    # ==========================
-    # 2️⃣ Model Training
-    # ==========================
+    # Model Training
     print("\nInitializing model...")
     model = AttentionBiLSTM(
         n_features=X.shape[2],
@@ -57,9 +51,7 @@ def main():
 
     print("\nTraining completed!")
 
-    # ==========================
-    # 3️⃣ Prediction
-    # ==========================
+    # Prediction
     print("\nGenerating predictions...")
     preds = predict(model, X_test).flatten()
 
