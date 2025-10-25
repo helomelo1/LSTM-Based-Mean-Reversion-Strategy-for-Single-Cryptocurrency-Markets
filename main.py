@@ -58,9 +58,7 @@ def main():
     df_for_backtest = df.iloc[-len(X_test):].copy()
     df_for_backtest['prediction'] = preds
 
-    # ==========================
-    # 4️⃣ Backtesting
-    # ==========================
+    # Backtesting
     print("\nRunning VectorBT backtest...")
     backtester = VectorBTMeanReversion(
         initial_capital=CONFIG["initial_capital"],
@@ -80,9 +78,7 @@ def main():
     # backtester.analyze_returns()
     # backtester.plot_positions(df_for_backtest)
 
-    # ==========================
-    # 5️⃣ Save outputs
-    # ==========================
+    # Save outputs
     df_for_backtest.to_csv("final_predictions_with_signals.csv", index=True)
     print("\nSaved final results to 'final_predictions_with_signals.csv'")
 
